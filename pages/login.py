@@ -37,6 +37,8 @@ def login_view(page: ft.Page):
     def check_login(user_id, user_pw):
         if user_id == "admin" and user_pw == "admin":
             return True
+        if user_id == "user" and user_pw == "user":
+            return True
         return False
 
     def login_click(e):
@@ -52,9 +54,14 @@ def login_view(page: ft.Page):
         is_success = check_login(user_id, user_pw)
 
         if is_success:
-            from pages.user_page import user_view
-            page.clean()
-            page.add(user_view(page))
+            if user_id == "admin":
+                from pages.admin_page import admin_view
+                page.clean()
+                page.add(admin_view(page))
+            else:
+                from pages.user_page import user_view
+                page.clean()
+                page.add(user_view(page))
             return
         else:
             result_text.value = "아이디 또는 비밀번호가 올바르지 않습니다."
