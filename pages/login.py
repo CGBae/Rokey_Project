@@ -52,8 +52,10 @@ def login_view(page: ft.Page):
         is_success = check_login(user_id, user_pw)
 
         if is_success:
-            result_text.value = "로그인 성공!"
-            result_text.color = ft.Colors.GREEN_500
+            from pages.user_page import user_view
+            page.clean()
+            page.add(user_view(page))
+            return
         else:
             result_text.value = "아이디 또는 비밀번호가 올바르지 않습니다."
             result_text.color = ft.Colors.RED_400
