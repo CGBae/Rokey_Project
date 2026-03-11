@@ -2,9 +2,8 @@ import flet as ft
 
 
 def login_view(page: ft.Page):
+
     page.title = "예약 프로그램"
-    page.window_width = 500
-    page.window_height = 700
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.padding = 0
@@ -15,7 +14,7 @@ def login_view(page: ft.Page):
         width=320,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.PERSON_OUTLINE,
+        prefix_icon=ft.icons.PERSON_OUTLINE,
     )
 
     pw_field = ft.TextField(
@@ -25,27 +24,29 @@ def login_view(page: ft.Page):
         width=320,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.LOCK_OUTLINE,
+        prefix_icon=ft.icons.LOCK_OUTLINE,
     )
 
     result_text = ft.Text(
         value="",
         size=14,
-        color=ft.Colors.RED_400,
+        color=ft.colors.RED_400,
     )
 
+    # 로그인 체크
     def check_login(user_id, user_pw):
         if user_id == "admin" and user_pw == "admin":
             return True
         return False
 
     def login_click(e):
+
         user_id = id_field.value.strip()
         user_pw = pw_field.value.strip()
 
         if not user_id or not user_pw:
             result_text.value = "아이디와 비밀번호를 모두 입력하세요."
-            result_text.color = ft.Colors.RED_400
+            result_text.color = ft.colors.RED_400
             page.update()
             return
 
@@ -53,16 +54,16 @@ def login_view(page: ft.Page):
 
         if is_success:
             result_text.value = "로그인 성공!"
-            result_text.color = ft.Colors.GREEN_500
+            result_text.color = ft.colors.GREEN_500
         else:
             result_text.value = "아이디 또는 비밀번호가 올바르지 않습니다."
-            result_text.color = ft.Colors.RED_400
+            result_text.color = ft.colors.RED_400
 
         page.update()
 
     def signup_click(e):
         result_text.value = "회원가입 화면은 아직 준비 중입니다."
-        result_text.color = ft.Colors.BLUE_400
+        result_text.color = ft.colors.BLUE_400
         page.update()
 
     login_button = ft.ElevatedButton(
@@ -89,11 +90,11 @@ def login_view(page: ft.Page):
         width=380,
         padding=30,
         border_radius=20,
-        bgcolor=ft.Colors.WHITE,
+        bgcolor=ft.colors.WHITE,
         shadow=ft.BoxShadow(
             spread_radius=1,
             blur_radius=18,
-            color=ft.Colors.BLACK12,
+            color=ft.colors.BLACK12,
             offset=ft.Offset(0, 4),
         ),
         content=ft.Column(
@@ -104,7 +105,7 @@ def login_view(page: ft.Page):
                 ft.Text(
                     "예약 시스템에 로그인하세요",
                     size=14,
-                    color=ft.Colors.GREY_600,
+                    color=ft.colors.GREY_600,
                 ),
                 ft.Container(height=25),
                 id_field,
@@ -121,6 +122,6 @@ def login_view(page: ft.Page):
 
     return ft.Container(
         expand=True,
-        alignment=ft.Alignment.CENTER,
+        alignment=ft.alignment.center,
         content=login_card,
     )
