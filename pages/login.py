@@ -61,8 +61,9 @@ def login_view(page: ft.Page):
         page.update()
 
     def signup_click(e):
-        result_text.value = "회원가입 화면은 아직 준비 중입니다."
-        result_text.color = ft.Colors.BLUE_400
+        from pages.signup import signup_view
+        page.clean()
+        page.add(signup_view(page))
         page.update()
 
     login_button = ft.ElevatedButton(
