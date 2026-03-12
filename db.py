@@ -16,13 +16,6 @@ CREATE TABLE IF NOT EXISTS users (
 """)
 conn.commit()
 
-# 기본 관리자 계정 추가
-cursor.execute(
-    "INSERT OR IGNORE INTO users (id, password) VALUES (?, ?)",
-    ("admin", "admin")
-)
-conn.commit()
-
 
 def create_user(user_id, password):
     try:
