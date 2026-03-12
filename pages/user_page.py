@@ -1,20 +1,16 @@
 import flet as ft
 
 
-def user_view(page: ft.Page):
-    page.title = "예약자 페이지"
-    page.window_width = 900
-    page.window_height = 700
+def show_user(page: ft.Page, show_login, user_id):
+    page.clean()
     page.padding = 20
     page.bgcolor = "#f5f6fa"
-    page.scroll = ft.ScrollMode.AUTO
 
     name_field = ft.TextField(
         label="예약자명",
         width=260,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.PERSON_OUTLINE,
     )
 
     phone_field = ft.TextField(
@@ -22,7 +18,6 @@ def user_view(page: ft.Page):
         width=260,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.PHONE_OUTLINED,
     )
 
     service_dropdown = ft.Dropdown(
@@ -43,7 +38,6 @@ def user_view(page: ft.Page):
         width=260,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.CALENDAR_MONTH_OUTLINED,
     )
 
     time_field = ft.TextField(
@@ -52,7 +46,6 @@ def user_view(page: ft.Page):
         width=260,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.ACCESS_TIME_OUTLINED,
     )
 
     request_field = ft.TextField(
@@ -70,16 +63,7 @@ def user_view(page: ft.Page):
         color=ft.Colors.RED_400,
     )
 
-    reservation_list = ft.Column(
-        spacing=12,
-        controls=[],
-    )
-
-    def go_to_login(e=None):
-        from pages.login import login_view
-        page.clean()
-        page.add(login_view(page))
-        page.update()
+    reservation_list = ft.Column(spacing=12, controls=[])
 
     def make_reservation_card(name, phone, service, date, time, request):
         return ft.Container(
@@ -104,12 +88,12 @@ def user_view(page: ft.Page):
                                 weight=ft.FontWeight.BOLD,
                             ),
                             ft.Container(
-                                padding=ft.Padding(10, 4, 10, 4),
+                                padding=10,
                                 border_radius=20,
-                                bgcolor=ft.Colors.BLUE_50,
+                                bgcolor="#EAF2FF",
                                 content=ft.Text(
                                     "예약 완료",
-                                    color=ft.Colors.BLUE_700,
+                                    color="#1E5EFF",
                                     size=12,
                                     weight=ft.FontWeight.W_600,
                                 ),
@@ -129,12 +113,12 @@ def user_view(page: ft.Page):
         )
 
     def reserve_click(e):
-        name_value = name_field.value.strip()
-        phone_value = phone_field.value.strip()
+        name_value = (name_field.value or "").strip()
+        phone_value = (phone_field.value or "").strip()
         service_value = service_dropdown.value
-        date_value = date_field.value.strip()
-        time_value = time_field.value.strip()
-        request_value = request_field.value.strip()
+        date_value = (date_field.value or "").strip()
+        time_value = (time_field.value or "").strip()
+        request_value = (request_field.value or "").strip()
 
         if not name_value or not phone_value or not service_value or not date_value or not time_value:
             result_text.value = "필수 항목을 모두 입력하세요."
@@ -165,24 +149,31 @@ def user_view(page: ft.Page):
 
         page.update()
 
-    reserve_button = ft.ElevatedButton(
-        "예약하기",
-        width=540,
-        height=50,
-        on_click=reserve_click,
-        style=ft.ButtonStyle(
-            shape=ft.RoundedRectangleBorder(radius=12),
-        ),
-    )
-
-    logout_button = ft.OutlinedButton(
-        "로그아웃",
-        width=140,
-        height=45,
-        on_click=go_to_login,
-        style=ft.ButtonStyle(
-            shape=ft.RoundedRectangleBorder(radius=12),
-        ),
+    header = ft.Row(
+        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[
+            ft.Column(
+                spacing=4,
+                controls=[
+                    ft.Text("예약자 페이지", size=30, weight=ft.FontWeight.BOLD),
+                    ft.Text(
+                        f"{user_id} 계정으로 로그인되었습니다.",
+                        size=14,
+                        color=ft.Colors.GREY_700,
+                    ),
+                ],
+            ),
+            ft.OutlinedButton(
+                "로그아웃",
+                width=120,
+                height=45,
+                on_click=lambda e: show_login(),
+                style=ft.ButtonStyle(
+                    shape=ft.RoundedRectangleBorder(radius=12),
+                ),
+            ),
+        ],
     )
 
     form_card = ft.Container(
@@ -219,7 +210,15 @@ def user_view(page: ft.Page):
                 ),
                 request_field,
                 result_text,
-                reserve_button,
+                ft.ElevatedButton(
+                    "예약하기",
+                    width=540,
+                    height=50,
+                    on_click=reserve_click,
+                    style=ft.ButtonStyle(
+                        shape=ft.RoundedRectangleBorder(radius=12),
+                    ),
+                ),
             ],
         ),
     )
@@ -249,34 +248,11 @@ def user_view(page: ft.Page):
         ),
     )
 
-    header = ft.Row(
-        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-        vertical_alignment=ft.CrossAxisAlignment.CENTER,
-        controls=[
-            ft.Column(
-                spacing=4,
-                controls=[
-                    ft.Text("예약자 페이지", size=30, weight=ft.FontWeight.BOLD),
-                    ft.Text(
-                        "서비스 예약과 예약 내역 확인이 가능합니다.",
-                        size=14,
-                        color=ft.Colors.GREY_700,
-                    ),
-                ],
-            ),
-            logout_button,
-        ],
-    )
-
-    return ft.Container(
-        expand=True,
-        content=ft.Column(
+    page.add(
+        ft.Column(
             expand=True,
             spacing=20,
-            controls=[
-                header,
-                form_card,
-                reservation_card,
-            ],
-        ),
+            controls=[header, form_card, reservation_card],
+        )
     )
+    page.update()

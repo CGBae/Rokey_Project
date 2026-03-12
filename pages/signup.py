@@ -1,21 +1,20 @@
 import flet as ft
+from db import create_user
 
 
-def signup_view(page: ft.Page):
-    page.title = "회원가입"
-    page.window_width = 500
-    page.window_height = 700
-    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER
+def show_signup(page: ft.Page, show_login):
+    page.clean()
     page.padding = 0
     page.bgcolor = "#f5f6fa"
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
     name_field = ft.TextField(
         label="이름",
         width=320,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.BADGE_OUTLINED,
+        prefix_icon=ft.Icons.BADGE,
     )
 
     id_field = ft.TextField(
@@ -23,7 +22,7 @@ def signup_view(page: ft.Page):
         width=320,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.PERSON_OUTLINE,
+        prefix_icon=ft.Icons.PERSON,
     )
 
     pw_field = ft.TextField(
@@ -33,7 +32,7 @@ def signup_view(page: ft.Page):
         width=320,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.LOCK_OUTLINE,
+        prefix_icon=ft.Icons.LOCK,
     )
 
     pw_check_field = ft.TextField(
@@ -43,7 +42,7 @@ def signup_view(page: ft.Page):
         width=320,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.LOCK_RESET_OUTLINED,
+        prefix_icon=ft.Icons.LOCK,
     )
 
     phone_field = ft.TextField(
@@ -51,7 +50,7 @@ def signup_view(page: ft.Page):
         width=320,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.PHONE_OUTLINED,
+        prefix_icon=ft.Icons.PHONE,
     )
 
     result_text = ft.Text(
@@ -60,18 +59,12 @@ def signup_view(page: ft.Page):
         color=ft.Colors.RED_400,
     )
 
-    def go_to_login(e=None):
-        from pages.login import login_view
-        page.clean()
-        page.add(login_view(page))
-        page.update()
-
     def signup_click(e):
-        name_value = name_field.value.strip()
-        id_value = id_field.value.strip()
-        pw_value = pw_field.value.strip()
-        pw_check_value = pw_check_field.value.strip()
-        phone_value = phone_field.value.strip()
+        name_value = (name_field.value or "").strip()
+        id_value = (id_field.value or "").strip()
+        pw_value = (pw_field.value or "").strip()
+        pw_check_value = (pw_check_field.value or "").strip()
+        phone_value = (phone_field.value or "").strip()
 
         if not name_value or not id_value or not pw_value or not pw_check_value or not phone_value:
             result_text.value = "모든 항목을 입력하세요."
@@ -87,11 +80,15 @@ def signup_view(page: ft.Page):
             page.update()
             return
 
-        # 나중에 여기서 실제 회원가입 함수 연결
-        # 예: result = register_user(name_value, id_value, pw_value, phone_value)
+        success = create_user(id_value, pw_value)
 
-        result_text.value = "회원가입이 완료되었습니다."
-        result_text.color = ft.Colors.GREEN_500
+        if success:
+            result_text.value = "회원가입이 완료되었습니다."
+            result_text.color = ft.Colors.GREEN_500
+        else:
+            result_text.value = "이미 존재하는 ID입니다."
+            result_text.color = ft.Colors.RED_400
+
         page.update()
 
     signup_button = ft.ElevatedButton(
@@ -108,7 +105,7 @@ def signup_view(page: ft.Page):
         "로그인으로 돌아가기",
         width=320,
         height=50,
-        on_click=go_to_login,
+        on_click=lambda e: show_login(),
         style=ft.ButtonStyle(
             shape=ft.RoundedRectangleBorder(radius=12),
         ),
@@ -151,8 +148,11 @@ def signup_view(page: ft.Page):
         ),
     )
 
-    return ft.Container(
-        expand=True,
-        alignment=ft.Alignment.CENTER,
-        content=signup_card,
+    page.add(
+        ft.Container(
+            expand=True,
+            alignment=ft.Alignment.CENTER,
+            content=signup_card,
+        )
     )
+    page.update()

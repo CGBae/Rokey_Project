@@ -1,21 +1,20 @@
 import flet as ft
+from db import login_user
 
 
-def login_view(page: ft.Page):
-    page.title = "예약 프로그램"
-    page.window_width = 500
-    page.window_height = 700
-    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER
+def show_login(page: ft.Page, show_signup, show_admin, show_user):
+    page.clean()
     page.padding = 0
     page.bgcolor = "#f5f6fa"
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
     id_field = ft.TextField(
         label="ID",
         width=320,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.PERSON_OUTLINE,
+        prefix_icon=ft.Icons.PERSON,
     )
 
     pw_field = ft.TextField(
@@ -25,7 +24,7 @@ def login_view(page: ft.Page):
         width=320,
         height=55,
         border_radius=12,
-        prefix_icon=ft.Icons.LOCK_OUTLINE,
+        prefix_icon=ft.Icons.LOCK,
     )
 
     result_text = ft.Text(
@@ -34,16 +33,9 @@ def login_view(page: ft.Page):
         color=ft.Colors.RED_400,
     )
 
-    def check_login(user_id, user_pw):
-        if user_id == "admin" and user_pw == "admin":
-            return True
-        if user_id == "user" and user_pw == "user":
-            return True
-        return False
-
     def login_click(e):
-        user_id = id_field.value.strip()
-        user_pw = pw_field.value.strip()
+        user_id = (id_field.value or "").strip()
+        user_pw = (pw_field.value or "").strip()
 
         if not user_id or not user_pw:
             result_text.value = "아이디와 비밀번호를 모두 입력하세요."
@@ -51,29 +43,17 @@ def login_view(page: ft.Page):
             page.update()
             return
 
-        is_success = check_login(user_id, user_pw)
+        result = login_user(user_id, user_pw)
 
-        if is_success:
+        if result is not None:
             if user_id == "admin":
-                from pages.admin_page import admin_view
-                page.clean()
-                page.add(admin_view(page))
+                show_admin(user_id)
             else:
-                from pages.user_page import user_view
-                page.clean()
-                page.add(user_view(page))
-            return
+                show_user(user_id)
         else:
-            result_text.value = "아이디 또는 비밀번호가 올바르지 않습니다."
+            result_text.value = "ID 또는 비밀번호가 올바르지 않습니다."
             result_text.color = ft.Colors.RED_400
-
-        page.update()
-
-    def signup_click(e):
-        from pages.signup import signup_view
-        page.clean()
-        page.add(signup_view(page))
-        page.update()
+            page.update()
 
     login_button = ft.ElevatedButton(
         "Login",
@@ -89,7 +69,7 @@ def login_view(page: ft.Page):
         "Sign Up",
         width=320,
         height=50,
-        on_click=signup_click,
+        on_click=lambda e: show_signup(),
         style=ft.ButtonStyle(
             shape=ft.RoundedRectangleBorder(radius=12),
         ),
@@ -129,8 +109,11 @@ def login_view(page: ft.Page):
         ),
     )
 
-    return ft.Container(
-        expand=True,
-        alignment=ft.Alignment.CENTER,
-        content=login_card,
+    page.add(
+        ft.Container(
+            expand=True,
+            alignment=ft.Alignment.CENTER,
+            content=login_card,
+        )
     )
+    page.update()
