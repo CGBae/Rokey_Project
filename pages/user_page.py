@@ -1,4 +1,5 @@
 import flet as ft
+from db import add_reservation, get_user_reservations
 
 
 def show_user(page: ft.Page, show_login, user_id):
@@ -65,7 +66,19 @@ def show_user(page: ft.Page, show_login, user_id):
 
     reservation_list = ft.Column(spacing=12, controls=[])
 
-    def make_reservation_card(name, phone, service, date, time, request):
+    def make_reservation_card(reservation):
+        reservation_id = reservation[0]
+        name = reservation[2]
+        phone = reservation[3]
+        date = reservation[4]
+        time = reservation[5]
+        service = reservation[6]
+        approved = reservation[7]
+
+        status_text = "승인" if approved == 1 else "대기"
+        status_bg = "#E8F5E9" if approved == 1 else "#FFF3E0"
+        status_color = "#2E7D32" if approved == 1 else "#EF6C00"
+
         return ft.Container(
             padding=18,
             border_radius=16,
@@ -90,27 +103,32 @@ def show_user(page: ft.Page, show_login, user_id):
                             ft.Container(
                                 padding=10,
                                 border_radius=20,
-                                bgcolor="#EAF2FF",
+                                bgcolor=status_bg,
                                 content=ft.Text(
-                                    "예약 완료",
-                                    color="#1E5EFF",
+                                    status_text,
+                                    color=status_color,
                                     size=12,
                                     weight=ft.FontWeight.W_600,
                                 ),
                             ),
                         ],
                     ),
+                    ft.Text(f"예약번호: {reservation_id}", size=13),
                     ft.Text(f"예약자: {name}", size=14),
                     ft.Text(f"연락처: {phone}", size=14),
                     ft.Text(f"예약 일시: {date} {time}", size=14),
-                    ft.Text(
-                        f"요청사항: {request if request else '없음'}",
-                        size=14,
-                        color=ft.Colors.GREY_700,
-                    ),
                 ],
             ),
         )
+
+    def refresh_reservations():
+        reservation_list.controls.clear()
+        rows = get_user_reservations(user_id)
+
+        for r in rows:
+            reservation_list.controls.append(make_reservation_card(r))
+
+        page.update()
 
     def reserve_click(e):
         name_value = (name_field.value or "").strip()
@@ -118,7 +136,6 @@ def show_user(page: ft.Page, show_login, user_id):
         service_value = service_dropdown.value
         date_value = (date_field.value or "").strip()
         time_value = (time_field.value or "").strip()
-        request_value = (request_field.value or "").strip()
 
         if not name_value or not phone_value or not service_value or not date_value or not time_value:
             result_text.value = "필수 항목을 모두 입력하세요."
@@ -126,16 +143,14 @@ def show_user(page: ft.Page, show_login, user_id):
             page.update()
             return
 
-        new_card = make_reservation_card(
+        add_reservation(
+            user_id,
             name_value,
             phone_value,
-            service_value,
             date_value,
             time_value,
-            request_value,
+            service_value,
         )
-
-        reservation_list.controls.insert(0, new_card)
 
         result_text.value = "예약이 등록되었습니다."
         result_text.color = ft.Colors.GREEN_500
@@ -147,7 +162,7 @@ def show_user(page: ft.Page, show_login, user_id):
         time_field.value = ""
         request_field.value = ""
 
-        page.update()
+        refresh_reservations()
 
     header = ft.Row(
         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -208,7 +223,6 @@ def show_user(page: ft.Page, show_login, user_id):
                         time_field,
                     ],
                 ),
-                request_field,
                 result_text,
                 ft.ElevatedButton(
                     "예약하기",
@@ -255,4 +269,5 @@ def show_user(page: ft.Page, show_login, user_id):
             controls=[header, form_card, reservation_card],
         )
     )
-    page.update()
+
+    refresh_reservations()
