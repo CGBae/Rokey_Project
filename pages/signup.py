@@ -9,14 +9,6 @@ def show_signup(page: ft.Page, show_login):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
-    name_field = ft.TextField(
-        label="이름",
-        width=320,
-        height=55,
-        border_radius=12,
-        prefix_icon=ft.Icons.BADGE,
-    )
-
     id_field = ft.TextField(
         label="ID",
         width=320,
@@ -45,14 +37,6 @@ def show_signup(page: ft.Page, show_login):
         prefix_icon=ft.Icons.LOCK,
     )
 
-    phone_field = ft.TextField(
-        label="전화번호",
-        width=320,
-        height=55,
-        border_radius=12,
-        prefix_icon=ft.Icons.PHONE,
-    )
-
     result_text = ft.Text(
         value="",
         size=14,
@@ -60,13 +44,11 @@ def show_signup(page: ft.Page, show_login):
     )
 
     def signup_click(e):
-        name_value = (name_field.value or "").strip()
         id_value = (id_field.value or "").strip()
         pw_value = (pw_field.value or "").strip()
         pw_check_value = (pw_check_field.value or "").strip()
-        phone_value = (phone_field.value or "").strip()
 
-        if not name_value or not id_value or not pw_value or not pw_check_value or not phone_value:
+        if not id_value or not pw_value or not pw_check_value:
             result_text.value = "모든 항목을 입력하세요."
             result_text.color = ft.Colors.RED_400
             page.update()
@@ -133,11 +115,9 @@ def show_signup(page: ft.Page, show_login):
                     color=ft.Colors.GREY_600,
                 ),
                 ft.Container(height=25),
-                name_field,
                 id_field,
                 pw_field,
                 pw_check_field,
-                phone_field,
                 ft.Container(height=10),
                 result_text,
                 ft.Container(height=15),
