@@ -1,4 +1,5 @@
 import flet as ft
+from datetime import datetime, timedelta, time
 from db import add_reservation, get_user_reservations
 
 
@@ -12,13 +13,18 @@ def show_user(page: ft.Page, show_login, user_id):
         width=260,
         height=55,
         border_radius=12,
+        prefix_icon=ft.Icons.PERSON,
     )
 
     phone_field = ft.TextField(
         label="연락처",
+        hint_text="숫자만 입력",
         width=260,
         height=55,
         border_radius=12,
+        prefix_icon=ft.Icons.PHONE,
+        keyboard_type=ft.KeyboardType.PHONE,
+        max_length=13,
     )
 
     service_dropdown = ft.Dropdown(
@@ -35,18 +41,22 @@ def show_user(page: ft.Page, show_login, user_id):
 
     date_field = ft.TextField(
         label="예약 날짜",
-        hint_text="예: 2026-03-15",
+        hint_text="날짜 선택 버튼 클릭",
         width=260,
         height=55,
         border_radius=12,
+        read_only=True,
+        prefix_icon=ft.Icons.CALENDAR_MONTH,
     )
 
     time_field = ft.TextField(
         label="예약 시간",
-        hint_text="예: 14:00",
+        hint_text="시간 선택 버튼 클릭",
         width=260,
         height=55,
         border_radius=12,
+        read_only=True,
+        prefix_icon=ft.Icons.ACCESS_TIME,
     )
 
     request_field = ft.TextField(
@@ -66,12 +76,66 @@ def show_user(page: ft.Page, show_login, user_id):
 
     reservation_list = ft.Column(spacing=12, controls=[])
 
+    def format_phone_number(value: str) -> str:
+        digits = "".join(ch for ch in value if ch.isdigit())[:11]
+
+        if len(digits) < 4:
+            return digits
+        if len(digits) < 8:
+            return f"{digits[:3]}-{digits[3:]}"
+        return f"{digits[:3]}-{digits[3:7]}-{digits[7:]}"
+
+    def phone_change(e):
+        formatted = format_phone_number(phone_field.value or "")
+        if phone_field.value != formatted:
+            phone_field.value = formatted
+            page.update()
+
+    phone_field.on_change = phone_change
+
+    def on_date_change(e):
+        if date_picker.value:
+            date_field.value = date_picker.value.strftime("%Y-%m-%d")
+            page.update()
+
+    def on_time_change(e):
+        if time_picker.value:
+            selected_time = time_picker.value
+            time_field.value = selected_time.strftime("%H:%M")
+            page.update()
+
+    today = datetime.now()
+
+    date_picker = ft.DatePicker(
+        first_date=today,
+        last_date=today + timedelta(days=90),
+        help_text="예약 날짜 선택",
+        confirm_text="확인",
+        cancel_text="취소",
+        on_change=on_date_change,
+    )
+
+    time_picker = ft.TimePicker(
+        value=time(hour=10, minute=0),
+        help_text="예약 시간 선택",
+        confirm_text="확인",
+        cancel_text="취소",
+        on_change=on_time_change,
+        hour_format=ft.TimePickerHourFormat.H24,
+    )
+
+    def open_date_picker(e):
+        page.show_dialog(date_picker)
+
+    def open_time_picker(e):
+        page.show_dialog(time_picker)
+
     def make_reservation_card(reservation):
         reservation_id = reservation[0]
         name = reservation[2]
         phone = reservation[3]
         date = reservation[4]
-        time = reservation[5]
+        time_value = reservation[5]
         service = reservation[6]
         approved = reservation[7]
 
@@ -116,7 +180,7 @@ def show_user(page: ft.Page, show_login, user_id):
                     ft.Text(f"예약번호: {reservation_id}", size=13),
                     ft.Text(f"예약자: {name}", size=14),
                     ft.Text(f"연락처: {phone}", size=14),
-                    ft.Text(f"예약 일시: {date} {time}", size=14),
+                    ft.Text(f"예약 일시: {date} {time_value}", size=14),
                 ],
             ),
         )
@@ -219,8 +283,35 @@ def show_user(page: ft.Page, show_login, user_id):
                         name_field,
                         phone_field,
                         service_dropdown,
-                        date_field,
-                        time_field,
+                    ],
+                ),
+                ft.Row(
+                    wrap=True,
+                    spacing=16,
+                    run_spacing=16,
+                    controls=[
+                        ft.Row(
+                            spacing=8,
+                            controls=[
+                                date_field,
+                                ft.IconButton(
+                                    icon=ft.Icons.CALENDAR_MONTH,
+                                    tooltip="날짜 선택",
+                                    on_click=open_date_picker,
+                                ),
+                            ],
+                        ),
+                        ft.Row(
+                            spacing=8,
+                            controls=[
+                                time_field,
+                                ft.IconButton(
+                                    icon=ft.Icons.ACCESS_TIME,
+                                    tooltip="시간 선택",
+                                    on_click=open_time_picker,
+                                ),
+                            ],
+                        ),
                     ],
                 ),
                 result_text,
